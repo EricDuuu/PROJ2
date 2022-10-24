@@ -1,5 +1,6 @@
 # Target library
 lib := libuthread.a
+CFLAGS := -Wall -Werror -Wextra
 
 all: $(lib)
 
