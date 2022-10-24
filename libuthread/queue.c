@@ -104,6 +104,7 @@ int queue_delete(queue_t queue, void *data) {
     free(fastNode);
   }
 
+  --queue->length;
   return 0;
 }
 
@@ -112,15 +113,15 @@ int queue_iterate(queue_t queue, queue_func_t func) {
     return -1;
 
   node_t current = queue->first;
-
   while (current) {
-
     (*func)(queue, current->data);
-
     current = current->next;
   }
-
   return 0;
 }
 
-int queue_length(queue_t queue) {}
+int queue_length(queue_t queue) {
+  if (!queue)
+    return -1;
+  return queue->length;
+}

@@ -1,7 +1,9 @@
 # Target library
-lib := libuthread.a
+lib = libuthread.a
 CFLAGS := -Wall -Werror -Wextra
 
-all: $(lib)
+lib: queue.o
+    gcc -Wall -Wextra -Werror -o $(lib) queue.o
 
-## TODO: Phase 1
+queue.o: queue.c queue.h
+    gcc -Wall -Wextra -Werror -c queue.o queue.c
