@@ -1,9 +1,8 @@
-# Target library
-lib = libuthread.a
-CFLAGS := -Wall -Werror -Wextra
-
-lib: queue.o
-    gcc -Wall -Wextra -Werror -o $(lib) queue.o
+libuthread.a: queue.o
+	ar rcs libuthread.a queue.o
 
 queue.o: queue.c queue.h
-    gcc -Wall -Wextra -Werror -c queue.o queue.c
+	gcc -Wall -Werror -g -c -o queue.o queue.c
+
+clean: 
+	rm -f libuthread.a queue.o

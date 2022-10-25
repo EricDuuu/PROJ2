@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
+
 #include "queue.h"
 
 /* REMINDER struct queue* = queue_t */
@@ -59,13 +61,12 @@ int queue_enqueue(queue_t queue, void *data) {
 }
 
 int queue_dequeue(queue_t queue, void **data) {
-  if (queue->first || !data || !queue)
+  if (!queue)
     return -1;
 
   node_t current = queue->first;
-  data = &current->data;
+  *data = (current->data);
   queue->first = queue->first->next;
-
   free(current);
 
   /* Case: last element popped */
@@ -112,9 +113,15 @@ int queue_iterate(queue_t queue, queue_func_t func) {
   if (!queue || !func || !queue->first)
     return -1;
 
+  node_t current2 = queue->first;
+  while (current2) {
+    func(queue, current->data);
+    current = current->next;
+  }
+
   node_t current = queue->first;
   while (current) {
-    (*func)(queue, current->data);
+    func(queue, current->data);
     current = current->next;
   }
   return 0;
