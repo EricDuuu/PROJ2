@@ -82,42 +82,33 @@ int queue_delete(queue_t queue, void *data) {
   if (!queue || !data)
     return -1;
 
-  node_t fastNode = queue->first;
-  node_t slowNode = queue->first;
+  node_t current = queue->first;
 
-  if (fastNode && fastNode->data == data) {
-    queue->first = fastNode->next;
-    if (!queue->first)
-      queue->last = queue->first;
-    free(fastNode);
-  } else {
-    while (fastNode && fastNode->data != data) {
-      slowNode = fastNode;
-      fastNode = fastNode->next;
-    }
-    if (!fastNode)
-      return -1;
-
-    if (!fastNode->next)
-      queue->last = slowNode;
-
-    slowNode->next = fastNode->next;
-    free(fastNode);
+  if (current->data == data) { /* Case: first node found */
+    if (!current->next)
+      queue->first = queue->last = NULL;
+    else
+      queue->first = queue->first->next;
+    --queue->length;
+    return 0;
   }
 
-  --queue->length;
-  return 0;
+  while (current->next) { /* Case: node in rest of queue */
+    if (current->next->data == data) {
+      current->next = current->next->next;
+      --queue->length;
+      if (!current->next) /* Case: last node deleted */
+        queue->last = current;
+      return 0;
+    }
+    current = current->next;
+  }
+  return -1;
 }
 
 int queue_iterate(queue_t queue, queue_func_t func) {
   if (!queue || !func || !queue->first)
     return -1;
-
-  node_t current2 = queue->first;
-  while (current2) {
-    func(queue, current->data);
-    current = current->next;
-  }
 
   node_t current = queue->first;
   while (current) {

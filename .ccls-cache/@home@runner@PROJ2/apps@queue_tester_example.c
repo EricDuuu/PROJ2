@@ -38,10 +38,9 @@ void test_queue_simple(void) {
 
 static void iterator_inc(queue_t q, void *data) {
   int *a = (int *)data;
-
-  if (*a == 42)
+  if (*a == 42) {
     queue_delete(q, data);
-  else
+  } else
     *a += 1;
 }
 
