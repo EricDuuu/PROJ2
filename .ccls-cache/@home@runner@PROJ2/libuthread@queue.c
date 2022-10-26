@@ -55,7 +55,7 @@ int queue_enqueue(queue_t queue, void *data) {
     queue->last->next = newNode;
     queue->last = queue->last->next;
   }
-
+  
   ++queue->length;
   return 0;
 }

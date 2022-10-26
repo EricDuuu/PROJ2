@@ -1,8 +1,21 @@
-libuthread.a: queue.o
-	ar rcs libuthread.a queue.o
+CC      := gcc
+CFLAGS  := -Wall -Wextra -Werror
+CFLAGS  += -g
+LIB      := ar rcs
 
-queue.o: queue.c queue.h
-	gcc -Wall -Werror -g -c -o queue.o queue.c
+targets  := libuthread.a
+objs     := queue.o
+
+all: $(targets)
+
+deps := $(patsubst %.o, %.d, $(objs))
+-include $(deps)
+
+libuthread.a: $(objs)
+	$(LIB) $@ $<
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean: 
-	rm -f libuthread.a queue.o
+	rm -f $(targets) $(objs) $(deps)

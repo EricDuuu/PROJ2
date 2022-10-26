@@ -62,10 +62,25 @@ void test_iterator(void) {
   TEST_ASSERT(queue_length(q) == 9);
 }
 
+void test_length(void) {
+  fprintf(stderr, "*** TEST length ***\n");
+  int data = 3;
+  int data2 = 4;
+  int data3 = 5;
+  queue_t q;
+  q = queue_create();
+  queue_enqueue(q, &data);
+  queue_enqueue(q, &data2);
+  queue_enqueue(q, &data3);
+
+  TEST_ASSERT(queue_length(q) == 3);
+}
+
 int main(void) {
   test_create();
   test_queue_simple();
   test_iterator();
+  test_length();
 
   return 0;
 }
