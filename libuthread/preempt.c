@@ -27,6 +27,9 @@ void preempt_enable(void)
 
 void preempt_start(bool preempt)
 {
+  if(preempt){
+    printf("hi");
+  }
 	/* TODO Phase 4 */
 }
 

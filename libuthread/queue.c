@@ -13,12 +13,12 @@ typedef struct node *node_t;
 
 struct node {
   void *data;
-  struct node *next;
+  node_t next;
 };
 
 struct queue {
-  struct node *first;
-  struct node *last;
+  node_t first;
+  node_t last;
   int length;
 };
 
@@ -55,7 +55,7 @@ int queue_enqueue(queue_t queue, void *data) {
     queue->last->next = newNode;
     queue->last = queue->last->next;
   }
-  
+
   ++queue->length;
   return 0;
 }

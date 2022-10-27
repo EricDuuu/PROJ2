@@ -1,4 +1,4 @@
-/*
+ke/*
  * Semaphore simple test
  *
  * Test the synchronization of three threads, by having them print messages in
