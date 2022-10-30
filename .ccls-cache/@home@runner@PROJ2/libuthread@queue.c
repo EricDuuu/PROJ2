@@ -7,7 +7,6 @@
 #include "queue.h"
 
 /* REMINDER struct queue* = queue_t */
-/**/
 
 typedef struct node *node_t;
 
@@ -22,6 +21,7 @@ struct queue {
   int length;
 };
 
+/* Allocates empty queue and initializes variable members */
 queue_t queue_create(void) {
   queue_t newQueue = malloc(sizeof(struct queue));
 
@@ -32,6 +32,7 @@ queue_t queue_create(void) {
   return newQueue;
 }
 
+/* Deallocates just the queue element, all elements should be deallocated */
 int queue_destroy(queue_t queue) {
   if (!queue || queue->first)
     return -1;
@@ -89,16 +90,20 @@ int queue_delete(queue_t queue, void *data) {
       queue->first = queue->last = NULL;
     else
       queue->first = queue->first->next;
+    free(current);
     --queue->length;
     return 0;
   }
 
   while (current->next) { /* Case: node in rest of queue */
     if (current->next->data == data) {
+      node_t temp = current->next;
       current->next = current->next->next;
       --queue->length;
       if (!current->next) /* Case: last node deleted */
         queue->last = current;
+
+      free(temp);
       return 0;
     }
     current = current->next;
@@ -110,10 +115,13 @@ int queue_iterate(queue_t queue, queue_func_t func) {
   if (!queue || !func || !queue->first)
     return -1;
 
+  // Two pointers to point at our node in case of deletion
   node_t current = queue->first;
+  node_t current_safe = NULL;
   while (current) {
+    current_safe = current->next;
     func(queue, current->data);
-    current = current->next;
+    current = current_safe;
   }
   return 0;
 }
