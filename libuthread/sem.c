@@ -29,7 +29,29 @@ int sem_destroy(sem_t sem) {
 }
 
 int sem_down(sem_t sem) { /* TODO Phase 3 */
+  if (!sem)
+    return -1;
+  else if (sem->count == 0) {
+    struct uthread_tcb *cur_tcb = uthread_current();
+    queue_enqueue(sem->blocked, cur_tcb);
+    uthread_block();
+  } else
+    --sem->count;
+  return 0;
 }
 
 int sem_up(sem_t sem) { /* TODO Phase 3 */
+  if (!sem)
+    return -1;
+  if (queue_length(sem->blocked) > 0) {
+    struct uthread_tcb *front;
+    if (queue_dequeue(sem->blocked, (void **)&front) == -1) {
+      return -1;
+    }
+    uthread_unblock(front);
+  }
+  // otherwise release the resource
+  else
+    ++sem->count;
+  return 0;
 }

@@ -1,2 +1,1 @@
-queue_tester_example.o: queue_tester_example.c ../libuthread/queue.h \
- ../libuthread/queue.h
+queue_tester_example.o: queue_tester_example.c ../libuthread/queue.h

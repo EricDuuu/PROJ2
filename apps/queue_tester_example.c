@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../libuthread/queue.h"
 #include <queue.h>
 
 #define TEST_ASSERT(assert)                                                    \

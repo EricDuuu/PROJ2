@@ -102,7 +102,6 @@ int queue_delete(queue_t queue, void *data) {
       --queue->length;
       if (!current->next) /* Case: last node deleted */
         queue->last = current;
-
       free(temp);
       return 0;
     }

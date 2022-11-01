@@ -1,10 +1,10 @@
 CC      := gcc
 CFLAGS  := -Wall -Wextra -Werror
 CFLAGS  += -g
-LIB      := ar rcs
+LIB     := ar rcs
 
 targets  := libuthread.a
-objs     := queue.o uthread.o context.o preempt.o
+objs     := queue.o uthread.o context.o preempt.o sem.o
 
 all: $(targets)
 
