@@ -34,17 +34,22 @@ struct uthread_tcb *uthread_current(void) {
 }
 
 void uthread_yield(void) {
-  if (queue_length(ready_processes) > 0) {
-    struct uthread_tcb *oldThread = malloc(sizeof(struct uthread_tcb));
-    struct uthread_tcb *runThread = malloc(sizeof(struct uthread_tcb));
-    currT->status = READY;
-    queue_enqueue(ready_processes, currT);
-    queue_dequeue(ready_processes, (void **)&runThread);
-    oldThread = currT;
-    currT = runThread;
-    runThread->status = RUNNING;
-    uthread_ctx_switch(oldThread->context, runThread->context);
-  }
+  struct uthread_tcb *oldThread = uthread_current();
+  struct uthread_tcb *newThread;
+
+  if (oldThread->status == RUNNING)
+    oldThread->status = READY;
+
+  queue_dequeue(ready_processes, (void **)&newThread);
+
+  if (oldThread->status == READY)
+    queue_enqueue(ready_processes, oldThread);
+
+  // queue_iterate(ready_processes, )
+
+  currT = newThread;
+  newThread->status = RUNNING;
+  uthread_ctx_switch(oldThread->context, newThread->context);
 }
 
 void uthread_exit(void) {
@@ -57,8 +62,10 @@ int uthread_create(uthread_func_t func, void *arg) {
   newT->status = READY;
   newT->stack = uthread_ctx_alloc_stack();
   newT->context = malloc(sizeof(ucontext_t));
+  newT->t_id = t_id++;
   uthread_ctx_init(newT->context, newT->stack, func, arg);
   queue_enqueue(ready_processes, newT);
+
   return 0;
 }
 /*
@@ -75,26 +82,35 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg) {
   idle->context = malloc(sizeof(ucontext_t));
   idle->status = RUNNING;
   idle->t_id = t_id++;
+  currT = malloc(sizeof(struct uthread_tcb));
+  currT = idle;
 
   // initialize the queue and create our first thread
   ready_processes = queue_create();
   uthread_create(func, arg);
 
-  // while loop until the there are no more processes
-
-
+  if (preempt) {
+    idle->status = RUNNING;
+  }
 
   // update appropriate statuses
   idle->status = RUNNING;
-  while (queue_length(ready_processes) == 0)
+
+  // while loop until the there are no more processes
+  while (queue_length(ready_processes) > 0)
     uthread_yield();
 
   return 0;
 }
 
 void uthread_block(void) { /* TODO Phase 4 */
+  currT->status = BLOCKED;
+  queue_enqueue(blocked_processes, currT);
+  uthread_yield();
 }
 
 void uthread_unblock(struct uthread_tcb *uthread) { /* TODO Phase 4 */
+  uthread->status = READY;
+  queue_enqueue(ready_processes, uthread);
   queue_delete(blocked_processes, uthread);
 }
