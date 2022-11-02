@@ -21,18 +21,19 @@ struct queue {
   int length;
 };
 
-/* Allocates empty queue and initializes variable members */
+/* Allocates empty queue and initializes struct members */
 queue_t queue_create(void) {
   queue_t newQueue = malloc(sizeof(struct queue));
-
   newQueue->first = NULL;
   newQueue->last = NULL;
   newQueue->length = 0;
-
   return newQueue;
 }
 
-/* Deallocates just the queue element, all elements should be deallocated */
+/*
+ * Deallocates just the queue element, all elements should be deallocated
+ * in respective delete/dequeue operations
+ */
 int queue_destroy(queue_t queue) {
   if (!queue || queue->first)
     return -1;
@@ -62,7 +63,7 @@ int queue_enqueue(queue_t queue, void *data) {
 }
 
 int queue_dequeue(queue_t queue, void **data) {
-  if (!queue)
+  if (!queue || queue->length <= 0)
     return -1;
 
   node_t current = queue->first;
@@ -78,9 +79,9 @@ int queue_dequeue(queue_t queue, void **data) {
   return 0;
 }
 
-/* finds node, then deletes node at any point in linked list */
+/* Finds node, then deletes node at any point in linked list */
 int queue_delete(queue_t queue, void *data) {
-  if (!queue || !data)
+  if (!queue || !data || queue->length <= 0)
     return -1;
 
   node_t current = queue->first;
@@ -122,6 +123,7 @@ int queue_iterate(queue_t queue, queue_func_t func) {
     func(queue, current->data);
     current = current_safe;
   }
+
   return 0;
 }
 

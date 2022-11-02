@@ -22,8 +22,6 @@ struct uthread_tcb {
 
 /* global queues */
 static queue_t ready_processes;
-static queue_t blocked_processes;
-
 static struct uthread_tcb *idle;
 static struct uthread_tcb *currT;
 
@@ -34,6 +32,7 @@ struct uthread_tcb *uthread_current(void) {
 }
 
 void uthread_yield(void) {
+  preempt_disable();
   struct uthread_tcb *oldThread = uthread_current();
   struct uthread_tcb *newThread;
 
@@ -42,42 +41,56 @@ void uthread_yield(void) {
 
   queue_dequeue(ready_processes, (void **)&newThread);
 
+  /* Once the thread is done, it automatically exits */
   if (oldThread->status == READY)
     queue_enqueue(ready_processes, oldThread);
-
-  // queue_iterate(ready_processes, )
 
   currT = newThread;
   newThread->status = RUNNING;
   uthread_ctx_switch(oldThread->context, newThread->context);
+  preempt_enable();
 }
 
+/* Called in uthread_ctx_bootstrap to execute thread then exit safely */
 void uthread_exit(void) {
-  currT->status = DEAD;
-  uthread_ctx_switch(currT->context, idle->context);
+  /* Deallocate memory and move onto next thread by uthread_yield() */
+  struct uthread_tcb *current = uthread_current();
+  current->status = DEAD;
+  free(current->context);
+  free(current->stack);
+  uthread_yield();
 }
 
+/* Allocate a new thread and it's members */
 int uthread_create(uthread_func_t func, void *arg) {
   struct uthread_tcb *newT = malloc(sizeof(struct uthread_tcb));
   newT->status = READY;
   newT->stack = uthread_ctx_alloc_stack();
   newT->context = malloc(sizeof(ucontext_t));
   newT->t_id = t_id++;
+
+  preempt_disable();
+
   uthread_ctx_init(newT->context, newT->stack, func, arg);
   queue_enqueue(ready_processes, newT);
 
+  preempt_enable();
   return 0;
 }
+
 /*
-// This is the first function called for threads.
-// It takes in a option for preemption, function to
-// be run by the thread and a pointer to the arguments
-// of the function. An idle thread is intialized and
-// while more threads are ready to be run, we loop.
-// Finally, we return once all threads complete.
-*/
+ * This is the first function called for threads.
+ * It takes in a option for preemption, function to
+ * be run by the thread and a pointer to the arguments
+ * of the function. An idle thread is intialized and
+ * while more threads are ready to be run, we loop.
+ * Finally, we return once all threads complete.
+ */
 int uthread_run(bool preempt, uthread_func_t func, void *arg) {
-  // Create the idle loop
+  if (preempt)
+    preempt_start(preempt);
+
+  // Creates the idle thread to later schedule for execution
   idle = malloc(sizeof(struct uthread_tcb));
   idle->context = malloc(sizeof(ucontext_t));
   idle->status = RUNNING;
@@ -85,13 +98,9 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg) {
   currT = malloc(sizeof(struct uthread_tcb));
   currT = idle;
 
-  // initialize the queue and create our first thread
+  // initialize the queue and create our initial thread
   ready_processes = queue_create();
   uthread_create(func, arg);
-
-  if (preempt) {
-    idle->status = RUNNING;
-  }
 
   // update appropriate statuses
   idle->status = RUNNING;
@@ -100,17 +109,19 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg) {
   while (queue_length(ready_processes) > 0)
     uthread_yield();
 
+  queue_destroy(ready_processes);
+
   return 0;
 }
 
-void uthread_block(void) { /* TODO Phase 4 */
+/* Used to block threads in queue implemented in semaphor */
+void uthread_block(void) {
   currT->status = BLOCKED;
-  queue_enqueue(blocked_processes, currT);
   uthread_yield();
 }
 
-void uthread_unblock(struct uthread_tcb *uthread) { /* TODO Phase 4 */
+/* Used to unblock threads in queue implemented in semaphor */
+void uthread_unblock(struct uthread_tcb *uthread) {
   uthread->status = READY;
   queue_enqueue(ready_processes, uthread);
-  queue_delete(blocked_processes, uthread);
 }

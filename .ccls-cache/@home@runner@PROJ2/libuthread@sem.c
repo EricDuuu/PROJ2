@@ -5,11 +5,19 @@
 #include "queue.h"
 #include "sem.h"
 
+/*
+// Purpose: the struct stores two data values
+// It holds the semaphore resource count 
+// and the queue of blocked threads
+*/
 struct semaphore {
   int count;
   queue_t blocked;
 };
 
+/*
+// Purpose: sem_create 
+*/
 sem_t sem_create(size_t count) {
   struct semaphore *sem = malloc(sizeof(struct semaphore));
   if (!sem)
@@ -22,7 +30,7 @@ sem_t sem_create(size_t count) {
 int sem_destroy(sem_t sem) {
   if (!sem)
     return -1;
-  if (queue_destroy(sem->blocked) == -1)
+  if (queue_destroy(sem->blocked) == -1 || queue_length(sem->blocked) != 0)
     return -1;
   free(sem);
   return 0;
@@ -40,7 +48,7 @@ int sem_down(sem_t sem) { /* TODO Phase 3 */
   return 0;
 }
 
-int sem_up(sem_t sem) { /* TODO Phase 3 */
+int sem_up(sem_t sem) {
   if (!sem)
     return -1;
   if (queue_length(sem->blocked) > 0) {
@@ -50,7 +58,7 @@ int sem_up(sem_t sem) { /* TODO Phase 3 */
     }
     uthread_unblock(front);
   }
-  // otherwise release the resource
+
   else
     ++sem->count;
   return 0;

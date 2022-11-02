@@ -4,7 +4,7 @@ CFLAGS  += -g
 LIB     := ar rcs
 
 targets  := libuthread.a
-objs     := queue.o uthread.o context.o preempt.o sem.o
+objs     := queue.o uthread.o context.o preempt.o sem.o preempt.o
 
 all: $(targets)
 

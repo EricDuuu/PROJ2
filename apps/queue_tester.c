@@ -19,7 +19,6 @@
 /* Create */
 void test_create(void) {
   fprintf(stderr, "*** TEST create ***\n");
-
   TEST_ASSERT(queue_create() != NULL);
 }
 
@@ -63,16 +62,49 @@ void test_iterator(void) {
   TEST_ASSERT(queue_length(q) == 9);
 }
 
+void test_no_members(void) {
+  int i = 10;
+  fprintf(stderr, "*** TEST test_no_members ***\n");
+  queue_t q = queue_create();
+
+  /*
+   * enqueue and dequeue checking validity of deletion and
+   * insert
+   */
+  queue_enqueue(q, &i);
+  queue_dequeue(q, (void **)&i);
+
+  /* Checks if the queue is properly empty */
+  TEST_ASSERT(queue_iterate(q, iterator_inc) == -1);
+  TEST_ASSERT(queue_dequeue(q, (void **)&i) == -1);
+  TEST_ASSERT(queue_delete(q, (void **)&i) == -1);
+  TEST_ASSERT(queue_length(q) == 0);
+}
+
+void test_endequeue(void) {
+  queue_t q;
+  int data[] = {1, 2, 3, 4, 5, 42, 6, 7, 8, 9};
+  size_t i;
+
+  fprintf(stderr, "*** TEST test_iterator ***\n");
+
+  int dataLen = (sizeof(data) / 4) + 1;
+  void *dataCopy[dataLen];
+  /* Initialize the queue and enqueue items */
+  q = queue_create();
+  for (i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
+    queue_enqueue(q, &data[i]);
+    queue_dequeue(q, (void **)&dataCopy[i]);
+  }
+  TEST_ASSERT(queue_length(q) == 0);
+}
+
 int main(void) {
   test_create();
   test_queue_simple();
   test_iterator();
+  test_no_members();
+  test_endequeue();
 
   return 0;
 }
-
-  
-
-
-
-      
