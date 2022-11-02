@@ -5,9 +5,17 @@
 #include "queue.h"
 #include "sem.h"
 
+#define EXEC_AND_HANDLE(f, r, ...)                                             \
+  do {                                                                         \
+    if (f(__VA_ARGS__) != r) {                                                 \
+      fprintf(stderr, "function: " #f "() failed in %s\n", __FILE__);          \
+      exit(1);                                                                 \
+    }                                                                          \
+  } while (0)
+
 /*
 // Purpose: the struct stores two data values
-// It holds the semaphore resource count 
+// It holds the semaphore resource count
 // and the queue of blocked threads
 */
 struct semaphore {
@@ -16,7 +24,7 @@ struct semaphore {
 };
 
 /*
-// Purpose: sem_create 
+// Purpose: sem_create
 */
 sem_t sem_create(size_t count) {
   struct semaphore *sem = malloc(sizeof(struct semaphore));
@@ -57,9 +65,7 @@ int sem_up(sem_t sem) {
       return -1;
     }
     uthread_unblock(front);
-  }
-
-  else
+  } else
     ++sem->count;
   return 0;
 }

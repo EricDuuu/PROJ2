@@ -8,6 +8,14 @@
 
 /* REMINDER struct queue* = queue_t */
 
+#define EXEC_AND_HANDLE(f, r, ...)                                             \
+  do {                                                                         \
+    if (f(__VA_ARGS__) != r) {                                                 \
+      fprintf(stderr, "function: " #f "() failed in %s\n", __FILE__);          \
+      exit(1);                                                                 \
+    }                                                                          \
+  } while (0)
+
 typedef struct node *node_t;
 
 struct node {

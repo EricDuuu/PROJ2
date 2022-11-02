@@ -10,6 +10,14 @@
 #include "queue.h"
 #include "uthread.h"
 
+#define EXEC_AND_HANDLE(f, r, ...)                                             \
+  do {                                                                         \
+    if (f(__VA_ARGS__) != r) {                                                 \
+      fprintf(stderr, "function: " #f "() failed in %s\n", __FILE__);          \
+      exit(1);                                                                 \
+    }                                                                          \
+  } while (0)
+
 typedef enum { READY, RUNNING, BLOCKED, DEAD } state;
 /* typedef void (*uthread_func_t)(void *arg) */
 
