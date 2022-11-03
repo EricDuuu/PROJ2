@@ -6,16 +6,6 @@
 
 #include "queue.h"
 
-/* REMINDER struct queue* = queue_t */
-
-#define EXEC_AND_HANDLE(f, r, ...)                                             \
-  do {                                                                         \
-    if (f(__VA_ARGS__) != r) {                                                 \
-      fprintf(stderr, "function: " #f "() failed in %s\n", __FILE__);          \
-      exit(1);                                                                 \
-    }                                                                          \
-  } while (0)
-
 typedef struct node *node_t;
 
 struct node {
@@ -32,6 +22,8 @@ struct queue {
 /* Allocates empty queue and initializes struct members */
 queue_t queue_create(void) {
   queue_t newQueue = malloc(sizeof(struct queue));
+  if (!newQueue)
+    return NULL;
   newQueue->first = NULL;
   newQueue->last = NULL;
   newQueue->length = 0;
@@ -43,9 +35,8 @@ queue_t queue_create(void) {
  * in respective delete/dequeue operations
  */
 int queue_destroy(queue_t queue) {
-  if (!queue || queue->first)
+  if (!queue || queue->first || queue_length(queue) != 0)
     return -1;
-
   free(queue);
   return 0;
 }
@@ -70,6 +61,7 @@ int queue_enqueue(queue_t queue, void *data) {
   return 0;
 }
 
+/* Pops the first element of the queue and replaces it with the next element */
 int queue_dequeue(queue_t queue, void **data) {
   if (!queue || queue->length <= 0)
     return -1;
@@ -119,6 +111,9 @@ int queue_delete(queue_t queue, void *data) {
   return -1;
 }
 
+/* queue_iterate takes in a queue and function as its parameters.
+// The given function is then run on every node's data value in the queue.
+*/
 int queue_iterate(queue_t queue, queue_func_t func) {
   if (!queue || !func || !queue->first)
     return -1;
@@ -135,6 +130,7 @@ int queue_iterate(queue_t queue, queue_func_t func) {
   return 0;
 }
 
+/* Returns the length of the queue*/
 int queue_length(queue_t queue) {
   if (!queue)
     return -1;

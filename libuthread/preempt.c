@@ -33,34 +33,32 @@
  */
 #define HZ_PER_USEC 1000000 / HZ
 
+/* https://www.gnu.org/software/libc/manual/html_node/Blocking-for-Handler.html
+ */
+/* https://man7.org/linux/man-pages/man2/sigprocmask.2.html */
 void preempt_disable(void) {
   sigset_t ss;
   EXEC_AND_HANDLE(sigemptyset, 0, &ss);
   EXEC_AND_HANDLE(sigaddset, 0, &ss, SIGVTALRM);
-  EXEC_AND_HANDLE(sigprocmask, 0, SIG_BLOCK, &ss, NULL);
+  EXEC_AND_HANDLE(sigprocmask, 0, SIG_BLOCK, &ss, NULL); /* Block signal */
 }
 
 void preempt_enable(void) {
   sigset_t ss;
   EXEC_AND_HANDLE(sigemptyset, 0, &ss);
   EXEC_AND_HANDLE(sigaddset, 0, &ss, SIGVTALRM);
-  EXEC_AND_HANDLE(sigprocmask, 0, SIG_UNBLOCK, &ss, NULL);
+  EXEC_AND_HANDLE(sigprocmask, 0, SIG_UNBLOCK, &ss, NULL); /* Unblock signal */
 }
-
-void signal_handler() { uthread_yield(); }
 
 void preempt_start(bool preempt) {
   if (!preempt)
     return;
-  struct sigaction sa;
-
-  sa.sa_handler = signal_handler;
-
-  /* Initialize signals by setting all flags to false */
-  EXEC_AND_HANDLE(sigemptyset, 0, &sa.sa_mask);
-  sa.sa_flags = 0;
 
   /* Set the signal to execute signal_handler() when alarm is detected */
+  struct sigaction sa;
+  sa.sa_handler = uthread_yield;
+  EXEC_AND_HANDLE(sigemptyset, 0, &sa.sa_mask); /* Initialize flags to false */
+  sa.sa_flags = 0;
   EXEC_AND_HANDLE(sigaction, 0, SIGVTALRM, &sa, NULL);
 
   /* Configure alarm to go off at 100 times per second */
@@ -69,14 +67,14 @@ void preempt_start(bool preempt) {
   timer.it_interval.tv_sec = 0;
   timer.it_value.tv_usec = (long int)HZ_PER_USEC;
   timer.it_value.tv_sec = 0;
-
   EXEC_AND_HANDLE(setitimer, 0, ITIMER_VIRTUAL, &timer, NULL);
 }
 
+// https://stackoverflow.com/questions/24803368/reset-sigaction-to-default
 void preempt_stop(void) {
   struct sigaction sa;
-  EXEC_AND_HANDLE(setitimer, 0, ITIMER_VIRTUAL, NULL, NULL);
-  sa.sa_handler = SIG_DFL;
+  EXEC_AND_HANDLE(setitimer, 0, ITIMER_VIRTUAL, NULL, NULL); /* Disable timer */
+  sa.sa_handler = SIG_DFL; /* Set signal handler back to default */
   EXEC_AND_HANDLE(sigemptyset, 0, &sa.sa_mask);
   sa.sa_flags = 0;
   EXEC_AND_HANDLE(sigaction, 0, SIGVTALRM, &sa, NULL);

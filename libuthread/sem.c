@@ -5,46 +5,45 @@
 #include "queue.h"
 #include "sem.h"
 
-#define EXEC_AND_HANDLE(f, r, ...)                                             \
-  do {                                                                         \
-    if (f(__VA_ARGS__) != r) {                                                 \
-      fprintf(stderr, "function: " #f "() failed in %s\n", __FILE__);          \
-      exit(1);                                                                 \
-    }                                                                          \
-  } while (0)
-
 /*
-// Purpose: the struct stores two data values
-// It holds the semaphore resource count
-// and the queue of blocked threads
-*/
+ * Purpose: the struct stores two data values
+ * It holds the semaphore resource count
+ * and the queue of blocked threads
+ */
 struct semaphore {
   int count;
   queue_t blocked;
 };
 
-/*
-// Purpose: sem_create
-*/
+/* Allocates the semaphor struct to manage the round robin queue */
 sem_t sem_create(size_t count) {
+  preempt_disable();
   struct semaphore *sem = malloc(sizeof(struct semaphore));
   if (!sem)
     return NULL;
   sem->blocked = queue_create();
   sem->count = count;
+  preempt_enable();
+
   return sem;
 }
 
+/* Deallocate memory allocated to the semaphor struct safely */
 int sem_destroy(sem_t sem) {
+  preempt_disable();
   if (!sem)
     return -1;
   if (queue_destroy(sem->blocked) == -1 || queue_length(sem->blocked) != 0)
     return -1;
   free(sem);
+  preempt_enable();
+
   return 0;
 }
 
-int sem_down(sem_t sem) { /* TODO Phase 3 */
+/* Reduces the sempahore resource count by 1 or blocks the thread if no
+ * resources available */
+int sem_down(sem_t sem) {
   if (!sem)
     return -1;
   else if (sem->count == 0) {
@@ -56,6 +55,8 @@ int sem_down(sem_t sem) { /* TODO Phase 3 */
   return 0;
 }
 
+/* Increases the semaphore resource count by 1 or dequeues a blocked thread if
+ * it exists*/
 int sem_up(sem_t sem) {
   if (!sem)
     return -1;

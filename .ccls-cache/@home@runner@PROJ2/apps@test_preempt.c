@@ -4,21 +4,48 @@
 #include "../libuthread/uthread.h"
 #include <uthread.h>
 
+
+
+void thread3(void *arg) {
+  (void)arg;
+
+  
+
+  while (1) {
+    printf("thread3\n");
+    
+  }
+}
+
+
 void thread2(void *arg) {
   (void)arg;
 
-  printf("thread2\n");
+  
+
+  while (1) {
+    printf("thread2\n");
+    
+    
+  }
+  
+  
+  
+  
 }
 
 void thread1(void *arg) {
   (void)arg;
 
   uthread_create(thread2, NULL);
-  uthread_yield();
+  uthread_create(thread3, NULL);
+  
   while (1) {
+    
+    printf("thread1\n");
   }
-  printf("thread1\n");
-  uthread_yield();
+  
+
 }
 
 int main(void) {

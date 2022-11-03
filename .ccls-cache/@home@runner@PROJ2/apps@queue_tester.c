@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../libuthread/queue.h"
 #include <queue.h>
 
 #define TEST_ASSERT(assert)                                                    \
@@ -20,6 +19,21 @@
 void test_create(void) {
   fprintf(stderr, "*** TEST create ***\n");
   TEST_ASSERT(queue_create() != NULL);
+}
+
+void test_length(void) {
+  fprintf(stderr, "*** TEST length ***\n");
+  int data = 3;
+  int data2 = 4;
+  int data3 = 5;
+  queue_t q;
+  q = queue_create();
+  queue_enqueue(q, &data);
+  queue_enqueue(q, &data2);
+  queue_enqueue(q, &data3);
+
+  TEST_ASSERT(queue_length(q) == 3);
+  queue_destroy(q);
 }
 
 /* Enqueue/Dequeue simple */
@@ -86,7 +100,7 @@ void test_endequeue(void) {
   int data[] = {1, 2, 3, 4, 5, 42, 6, 7, 8, 9};
   size_t i;
 
-  fprintf(stderr, "*** TEST test_iterator ***\n");
+  fprintf(stderr, "*** TEST test_endequeue ***\n");
 
   int dataLen = (sizeof(data) / 4) + 1;
   void *dataCopy[dataLen];
@@ -101,6 +115,7 @@ void test_endequeue(void) {
 
 int main(void) {
   test_create();
+  test_length();
   test_queue_simple();
   test_iterator();
   test_no_members();

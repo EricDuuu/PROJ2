@@ -59,8 +59,7 @@ void uthread_ctx_destroy_stack(void *top_of_stack);
  * Return: 0 if @uctx was properly initialized, or -1 in case of failure
  */
 int uthread_ctx_init(uthread_ctx_t *uctx, void *top_of_stack,
-					 uthread_func_t func, void *arg);
-
+                     uthread_func_t func, void *arg);
 
 /**
  * Private preemption API
@@ -95,7 +94,6 @@ void preempt_enable(void);
  * preempt_disable - Disable preemption
  */
 void preempt_disable(void);
-
 
 /**
  * Private uthread API

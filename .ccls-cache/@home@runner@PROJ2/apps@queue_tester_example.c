@@ -33,6 +33,7 @@ void test_queue_simple(void) {
   queue_enqueue(q, &data);
   queue_dequeue(q, (void **)&ptr);
   TEST_ASSERT(ptr == &data);
+  queue_destroy(q);
 }
 
 static void iterator_inc(queue_t q, void *data) {
@@ -59,6 +60,7 @@ void test_iterator(void) {
   queue_iterate(q, iterator_inc);
   TEST_ASSERT(data[0] == 2);
   TEST_ASSERT(queue_length(q) == 9);
+  queue_destroy(q);
 }
 
 void test_length(void) {
@@ -73,13 +75,14 @@ void test_length(void) {
   queue_enqueue(q, &data3);
 
   TEST_ASSERT(queue_length(q) == 3);
+  queue_destroy(q);
 }
 
 int main(void) {
-  test_create();
-  test_queue_simple();
+  //test_create();
+  //test_queue_simple();
   test_iterator();
-  test_length();
+  //test_length();
 
   return 0;
 }
